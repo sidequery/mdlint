@@ -2,7 +2,7 @@
 
 A fast markdown linter written in Rust. Validates backlinks, wikilinks, heading anchors, images, and document structure across collections of markdown files.
 
-Built for Obsidian vaults, documentation sites, wikis, and any project where broken links between markdown files are a problem.
+Built for [mdnb](https://mdnb.app/) notebooks, Obsidian vaults, documentation sites, wikis, and any project where broken links between markdown files are a problem.
 
 ## Features
 
