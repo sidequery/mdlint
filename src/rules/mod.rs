@@ -51,10 +51,12 @@ pub trait FileRule: Send + Sync {
 pub trait WorkspaceRule: Send + Sync {
     fn name(&self) -> &str;
     fn default_severity(&self) -> Severity;
+    /// If true, rule only runs when explicitly configured in mdlint.toml.
+    fn opt_in(&self) -> bool { false }
     fn check(&self, workspace: &Workspace, config: &Config) -> Vec<Diagnostic>;
 }
 
-fn severity_for_rule(name: &str, default: Severity, config: &Config) -> Option<Severity> {
+fn severity_for_rule(name: &str, default: Severity, opt_in: bool, config: &Config) -> Option<Severity> {
     match config.rule_config(name) {
         Some(rc) => {
             if rc.is_off() {
@@ -63,7 +65,9 @@ fn severity_for_rule(name: &str, default: Severity, config: &Config) -> Option<S
                 Some(rc.level().into())
             }
         }
-        None => Some(default),
+        None => {
+            if opt_in { None } else { Some(default) }
+        }
     }
 }
 
@@ -87,7 +91,7 @@ pub fn run_all(workspace: &Workspace, config: &Config) -> Vec<Diagnostic> {
         .flat_map(|file| {
             let mut file_diags = Vec::new();
             for rule in &file_rules {
-                if let Some(severity) = severity_for_rule(rule.name(), rule.default_severity(), config) {
+                if let Some(severity) = severity_for_rule(rule.name(), rule.default_severity(), false, config) {
                     let mut diags = rule.check(file, config);
                     for d in &mut diags {
                         d.severity = severity.clone();
@@ -101,7 +105,7 @@ pub fn run_all(workspace: &Workspace, config: &Config) -> Vec<Diagnostic> {
 
     // Phase 2: workspace-level rules
     for rule in &workspace_rules {
-        if let Some(severity) = severity_for_rule(rule.name(), rule.default_severity(), config) {
+        if let Some(severity) = severity_for_rule(rule.name(), rule.default_severity(), rule.opt_in(), config) {
             let mut diags = rule.check(workspace, config);
             for d in &mut diags {
                 d.severity = severity.clone();

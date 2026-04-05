@@ -293,6 +293,7 @@ fn test_exit_code_zero_on_warnings_only() {
 #[test]
 fn test_orphan_page_detected() {
     let vault = create_vault(&[
+        ("mdlint.toml", "[rules.orphan-pages]\nlevel = \"warning\"\n"),
         ("index.md", "# Index\n\n[Guide](./guide.md)\n"),
         ("guide.md", "# Guide\n"),
         ("orphan.md", "# Orphan\n\nNobody links here.\n"),

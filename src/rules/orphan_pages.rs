@@ -16,6 +16,8 @@ impl WorkspaceRule for OrphanPages {
         Severity::Warning
     }
 
+    fn opt_in(&self) -> bool { true }
+
     fn check(&self, workspace: &Workspace, config: &Config) -> Vec<Diagnostic> {
         let exclude_patterns: Vec<String> = config
             .rule_config(self.name())

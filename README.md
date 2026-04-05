@@ -113,7 +113,7 @@ Set any rule to `"off"` to disable it.
 | `heading-increment` | warning | Heading levels must increment by one (no jumping from h1 to h4) |
 | `require-frontmatter` | off | Requires specified YAML frontmatter fields to be present |
 | `first-heading` | warning | First heading in a file must be a specific level (default: h1) |
-| `orphan-pages` | warning | Flags markdown files that no other file links to. Configurable `exclude` list for entry points (defaults to `index.md`, `README.md`) |
+| `orphan-pages` | off | Flags markdown files that no other file links to. Opt-in. Configurable `exclude` list for entry points (defaults to `index.md`, `README.md`) |
 
 ### Link types validated
 
