@@ -1,0 +1,3 @@
+[rules.require-frontmatter]
+level = "warning"
+fields = ["title"]
