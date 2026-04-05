@@ -239,6 +239,19 @@ fn test_external_links_skipped_by_default() {
 }
 
 #[test]
+fn test_html_xml_tags_not_treated_as_links() {
+    let vault = create_vault(&[
+        ("doc.md", "# Doc\n\nSome text with <custom:tag>content</custom:tag> inline.\n\n<my-ns:element attr=\"val\">block</my-ns:element>\n"),
+    ]);
+
+    cmd()
+        .arg(vault.path())
+        .assert()
+        .success()
+        .stderr(predicates::str::contains("broken-links").not());
+}
+
+#[test]
 fn test_links_in_code_blocks_ignored() {
     let vault = create_vault(&[
         ("doc.md", "# Doc\n\n```\n[Not a link](./fake.md)\n```\n"),

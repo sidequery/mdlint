@@ -25,14 +25,38 @@ pub struct Link {
     pub len: usize,
 }
 
+const KNOWN_SCHEMES: &[&str] = &["http://", "https://", "mailto:", "tel:", "ftp://"];
+
 impl Link {
     /// Whether this is an external URL (http, https, mailto, etc.)
     pub fn is_external(&self) -> bool {
         let t = &self.raw_target;
-        t.starts_with("http://")
-            || t.starts_with("https://")
-            || t.starts_with("mailto:")
-            || t.starts_with("tel:")
+        KNOWN_SCHEMES.iter().any(|s| t.starts_with(s))
+    }
+
+    /// Whether this link should be skipped entirely during validation.
+    /// Filters out targets that are clearly not file paths or URLs,
+    /// such as HTML/XML tag names that comrak misparses as links.
+    pub fn should_skip(&self) -> bool {
+        let t = &self.raw_target;
+
+        // External URLs are handled separately
+        if self.is_external() {
+            return false;
+        }
+
+        // Contains a colon but isn't a known scheme: likely XML namespace,
+        // custom protocol, or other non-file-path content
+        if t.contains(':') {
+            return true;
+        }
+
+        // Targets with quotes/commas are JSON or attribute garbage
+        if t.contains('"') || t.contains(',') {
+            return true;
+        }
+
+        false
     }
 
     /// Decoded file target path (percent-decoded).

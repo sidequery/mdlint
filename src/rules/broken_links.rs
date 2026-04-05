@@ -19,6 +19,9 @@ impl WorkspaceRule for BrokenLinks {
 
         for file in &workspace.files {
             for link in &file.links {
+                if link.should_skip() {
+                    continue;
+                }
                 if link.is_external() && !config.links.check_external {
                     continue;
                 }
