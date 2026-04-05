@@ -16,6 +16,12 @@ Built for [mdnb](https://mdnb.app/) notebooks, Obsidian vaults, documentation si
 ## Install
 
 ```
+brew install sidequery/tap/mdlint
+```
+
+Or build from source:
+
+```
 cargo install --path .
 ```
 
