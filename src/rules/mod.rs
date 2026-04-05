@@ -1,6 +1,7 @@
 pub mod broken_links;
 pub mod first_heading;
 pub mod heading_increment;
+pub mod orphan_pages;
 pub mod require_frontmatter;
 
 use crate::config::{Config, RuleLevel};
@@ -76,6 +77,7 @@ pub fn run_all(workspace: &Workspace, config: &Config) -> Vec<Diagnostic> {
 
     let workspace_rules: Vec<Box<dyn WorkspaceRule>> = vec![
         Box::new(broken_links::BrokenLinks),
+        Box::new(orphan_pages::OrphanPages),
     ];
 
     // Phase 1: file-level rules in parallel

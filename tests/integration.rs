@@ -1,4 +1,5 @@
 use assert_cmd::Command;
+use predicates::prelude::*;
 use std::fs;
 use tempfile::TempDir;
 
@@ -287,4 +288,73 @@ fn test_exit_code_zero_on_warnings_only() {
         .arg(vault.path())
         .assert()
         .success();
+}
+
+#[test]
+fn test_orphan_page_detected() {
+    let vault = create_vault(&[
+        ("index.md", "# Index\n\n[Guide](./guide.md)\n"),
+        ("guide.md", "# Guide\n"),
+        ("orphan.md", "# Orphan\n\nNobody links here.\n"),
+    ]);
+
+    cmd()
+        .arg(vault.path())
+        .assert()
+        .stderr(predicates::str::contains("page has no incoming links"));
+}
+
+#[test]
+fn test_orphan_page_index_excluded_by_default() {
+    let vault = create_vault(&[
+        ("index.md", "# Index\n"),
+    ]);
+
+    // index.md is excluded by default, so no orphan warning
+    cmd()
+        .arg(vault.path())
+        .assert()
+        .stderr(predicates::str::contains("orphan").not());
+}
+
+#[test]
+fn test_orphan_page_custom_exclude() {
+    let vault = create_vault(&[
+        ("mdlint.toml", "[rules.orphan-pages]\nlevel = \"warning\"\nexclude = [\"index.md\", \"changelog.md\"]\n"),
+        ("index.md", "# Index\n"),
+        ("changelog.md", "# Changelog\n"),
+    ]);
+
+    // Both excluded, no orphan warnings
+    cmd()
+        .arg(vault.path())
+        .assert()
+        .stderr(predicates::str::contains("orphan").not());
+}
+
+#[test]
+fn test_no_orphans_when_all_linked() {
+    let vault = create_vault(&[
+        ("index.md", "# Index\n\n[A](./a.md)\n[B](./b.md)\n"),
+        ("a.md", "# A\n\n[B](./b.md)\n"),
+        ("b.md", "# B\n\n[A](./a.md)\n"),
+    ]);
+
+    cmd()
+        .arg(vault.path())
+        .assert()
+        .stderr(predicates::str::contains("orphan").not());
+}
+
+#[test]
+fn test_orphan_page_disabled() {
+    let vault = create_vault(&[
+        ("mdlint.toml", "[rules.orphan-pages]\nlevel = \"off\"\n"),
+        ("orphan.md", "# Orphan\n"),
+    ]);
+
+    cmd()
+        .arg(vault.path())
+        .assert()
+        .stderr(predicates::str::contains("orphan").not());
 }
